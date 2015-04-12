@@ -1,0 +1,22 @@
+{
+  "name": "import-kilometrikisa",
+  "version": "0.0.0",
+  "authors": [],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "bacon": "~0.7.53",
+    "bacon.jquery": "~0.4.12",
+    "bacon.model": "~0.1.12",
+    "handlebars": "~3.0.0",
+    "jquery": "~2.1.3",
+    "requirejs": "~2.1.17"
+  }
+}

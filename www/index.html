@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+  <head lang="en">
+    <meta charset="UTF-8">
+    <title>Kilometrikisamaatti!</title>
+    <script data-main="app" src="lib/requirejs/require.js"></script>
+    <link href='https://fonts.googleapis.com/css?family=Fira+Sans' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="styles.css" />
+  </head>
+  <body>
+    <div class="content">
+      <h4>Kilometrikisamaatti!</h4>
+      <ol>
+        <li id='step1' class='enabled'>Kirjaudu palveluun Kilometrikisan tunnuksilla
+          <form>
+            <p><div id="message"></div></p>
+            <p><input id="username" type="text" placeholder="Kilometrikisan käyttäjätunnus" value="" name="login"></p>
+            <p><input id="password" type="password" placeholder="Kilometrikisan salasana" value="" name="password"></p>
+            <p><button id="login" type="button">Kirjaudu sisään</button>
+          </form>
+          <p class="small">Unohtuneen Kilometrikisan salasanan voit palauttaa Kilometrikisan <a href="https://www.kilometrikisa.fi/accounts/recover/">omilla sivuilla</a>.</p></li>
+        <li id='step2' class='disabled'>Kytke <a href="/auth/moves/">Moves <img src="moves_logo.png"/></a><br>tai <a href="/auth/strava/">Strava <img src="ConnectWithStrava.png"/></a>
+        </li>
+        <li id='step3' class='disabled'>Nauti kesästä fillarin päältä - kilometrisi kirjautuvat automaagisesti Kilometrikisaan!</li>
+      </ol>
+    </div>
+  </body>
+</html>
