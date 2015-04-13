@@ -27,7 +27,7 @@ passport.use(new StravaStrategy(
   {
     clientID: '5465',
     clientSecret: process.env.STRAVA_KLIENT_SEKRET,
-    callbackURL: 'http://localhost:9876/auth/strava/callback', //'http://import-kilometrikisa.herokuapp.com/auth/strava/callback',
+    callbackURL: process.env.NODE_ENV === 'production' ? 'https://kilometrikisamaatti.herokuapp.com/auth/strava/callback' : 'http://localhost:9876/auth/strava/callback',
     passReqToCallback: true
   },
   function (req, accessToken, refreshToken, profile, done) {
@@ -43,7 +43,7 @@ passport.use(new MovesStrategy(
   {
     clientID: 'L7RMtCDn2DiS1EEJiE75WjwLdKdlJu_U',
     clientSecret: process.env.MOVES_KLIENT_SEKRET,
-    callbackURL: 'http://localhost:9876/auth/moves/callback', //'http://import-kilometrikisa.herokuapp.com/auth/moves/callback',
+    callbackURL: process.env.NODE_ENV === 'production' ? 'https://kilometrikisamaatti.herokuapp.com/auth/moves/callback' : 'http://localhost:9876/auth/moves/callback',
     passReqToCallback: true
   },
   function (req, accessToken, refreshToken, profile, done) {
@@ -60,6 +60,19 @@ passport.serializeUser(function (user, done) {
 })
 
 var app = express()
+
+function forceSsl(req, res, next) {
+  if (req.headers['x-forwarded-proto'] !== 'https') {
+    return res.redirect(['https://', req.get('Host'), req.url].join(''))
+  } else {
+    next()
+  }
+}
+
+if (process.env.NODE_ENV === 'production') {
+  app.use(forceSsl)
+}
+
 app.use(logger('dev'))
 app.use(express.static(__dirname + '/www'))
 app.use(bodyParser.json())
