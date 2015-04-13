@@ -29,7 +29,7 @@ passport.use(new StravaStrategy(
     callbackURL: 'http://localhost:9876/auth/strava/callback', //'http://import-kilometrikisa.herokuapp.com/auth/strava/callback',
     passReqToCallback: true
   },
-  function(req, accessToken, refreshToken, profile, done) {
+  function (req, accessToken, refreshToken, profile, done) {
     req.session.stravaAccessToken = accessToken
     return saveStravaAccessToken(req.session.user, accessToken)
       .then(function () {
@@ -45,7 +45,7 @@ passport.use(new MovesStrategy(
     callbackURL: 'http://localhost:9876/auth/moves/callback', //'http://import-kilometrikisa.herokuapp.com/auth/moves/callback',
     passReqToCallback: true
   },
-  function(req, accessToken, refreshToken, profile, done) {
+  function (req, accessToken, refreshToken, profile, done) {
     req.session.movesAccessToken = accessToken
     return saveMovesAccessToken(req.session.user, accessToken)
       .then(function () {
@@ -54,7 +54,7 @@ passport.use(new MovesStrategy(
   }
 ))
 
-passport.serializeUser(function(user, done) {
+passport.serializeUser(function (user, done) {
   done(null, user.id)
 })
 
@@ -83,7 +83,7 @@ app.get('/auth/strava/callback', passport.authenticate('strava', stravaOpts))
 app.get('/auth/moves', passport.authenticate('moves', movesOpts))
 app.get('/auth/moves/callback', passport.authenticate('moves', movesOpts))
 
-app.get('/rest/userinfo', function(req, res) {
+app.get('/rest/userinfo', function (req, res) {
   util.log("/rest/userinfo " + (req.session.hasOwnProperty('user') ? req.session.user : '[nil]'))
   var ret = {user: req.session.user}
 
@@ -94,7 +94,7 @@ app.get('/rest/userinfo', function(req, res) {
     })
 })
 
-app.post('/rest/login', function(req, res, next) {
+app.post('/rest/login', function (req, res, next) {
   util.log('/rest/login')
   delete req.session.user
 
@@ -116,11 +116,11 @@ app.post('/rest/login', function(req, res, next) {
     var cookieJar = requestAsync.jar()
     return requestAsync({uri: 'https://www.kilometrikisa.fi/accounts/login/', jar: cookieJar})
       .spread(getCsrfTokenCookie)
-      .then(function(csrftoken) {
+      .then(function (csrftoken) {
         return postLogin(csrftoken, creds.username, creds.password, cookieJar)
       })
       .spread(getSessionIdCookie)
-      .then(function(sessionid) {
+      .then(function (sessionid) {
         if (sessionid === undefined) {
           throw new HttpError(401, "Tarkista käyttäjätunnus ja/tai salasana")
         }
@@ -177,12 +177,12 @@ app.post('/rest/login', function(req, res, next) {
   }
 })
 
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
   util.log('error handling request: ' + err.stack)
   res.status(err.status || 500).end()
 })
 
-var server = app.listen(process.env.PORT || 9876, function() {
+var server = app.listen(process.env.PORT || 9876, function () {
   util.log('Listening on port ' + server.address().port)
 })
 
