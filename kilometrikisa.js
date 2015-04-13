@@ -14,7 +14,8 @@ var pgSession = require('connect-pg-simple')(session)
 var _ = require('lodash')
 var Cookie = require('tough-cookie').Cookie
 var dbString = process.env.DATABASE_URL || "postgres://localhost/kilometrikisamaatti"
-var pgrm = require('pg-using-bluebird')({dbUrl: dbString})
+var database = require('./database')(dbString)
+
 
 function HttpError(status, msg) {
   var ret = new Error(msg)
@@ -31,7 +32,7 @@ passport.use(new StravaStrategy(
   },
   function (req, accessToken, refreshToken, profile, done) {
     req.session.stravaAccessToken = accessToken
-    return saveStravaAccessToken(req.session.user, accessToken)
+    return database.saveStravaAccessTokenAsync(req.session.user, accessToken)
       .then(function () {
         done(null, profile)
       })
@@ -47,7 +48,7 @@ passport.use(new MovesStrategy(
   },
   function (req, accessToken, refreshToken, profile, done) {
     req.session.movesAccessToken = accessToken
-    return saveMovesAccessToken(req.session.user, accessToken)
+    return database.saveMovesAccessTokenAsync(req.session.user, accessToken)
       .then(function () {
         done(null, profile)
       })
@@ -87,9 +88,9 @@ app.get('/rest/userinfo', function (req, res) {
   util.log("/rest/userinfo " + (req.session.hasOwnProperty('user') ? req.session.user : '[nil]'))
   var ret = {user: req.session.user}
 
-  pgrm.queryAsync('select moves_accesstoken is not null as moves, strava_accesstoken is not null as strava from login where kk_login = $1', [req.session.user])
-    .then(function (data) {
-      _.assign(ret, data[0])
+  database.getAccessTokensAsync(req.session.user)
+    .then(function (tokens) {
+      _.assign(ret, tokens)
       res.json(ret)
     })
 })
@@ -156,25 +157,6 @@ app.post('/rest/login', function (req, res, next) {
       return cookie ? cookie.value : undefined
     }
   }
-
-  function saveCredentials(username, password) {
-    return function () {
-      var insert = {
-        text: 'insert into login (kk_login, kk_passwd) select $1, $2',
-        values: [username, password]
-      }
-      var update = {
-        text: 'update login set kk_passwd = $2 where kk_login = $1',
-        values: [username, password]
-      }
-      var q = pgrm.createUpsertCTE('login', 'kk_login', {insert: insert, update: update})
-
-      return pgrm.queryAsync(q.text, q.values)
-        .then(function (data) {
-          return data[0].kk_login
-        })
-    }
-  }
 })
 
 app.use(function (err, req, res, next) {
@@ -186,11 +168,8 @@ var server = app.listen(process.env.PORT || 9876, function () {
   util.log('Listening on port ' + server.address().port)
 })
 
-
-function saveMovesAccessToken(username, accessToken) {
-  return pgrm.queryAsync('update login set moves_accesstoken = $2 where kk_login = $1', [username, accessToken])
-}
-
-function saveStravaAccessToken(username, accessToken) {
-  return pgrm.queryAsync('update login set strava_accesstoken = $2 where kk_login = $1', [username, accessToken])
+function saveCredentials(username, password) {
+  return function () {
+    return database.saveCredentialsAsync(username, password)
+  }
 }
