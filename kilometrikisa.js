@@ -2,8 +2,6 @@ var express = require('express')
 var logger = require('morgan')
 var bodyParser = require('body-parser')
 var Promise = require('bluebird')
-var using = Promise.using
-var requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}))
 var util = require('util')
 var passport = require('passport')
 var StravaStrategy = require('passport-strava').Strategy
@@ -12,16 +10,10 @@ var pg = require('pg')
 var session = require('express-session')
 var pgSession = require('connect-pg-simple')(session)
 var _ = require('lodash')
-var Cookie = require('tough-cookie').Cookie
 var dbString = process.env.DATABASE_URL || "postgres://localhost/kilometrikisamaatti"
 var database = require('./database')(dbString)
+var kmapi = require('./kmapi')
 
-
-function HttpError(status, msg) {
-  var ret = new Error(msg)
-  ret.status = status
-  return ret
-}
 
 passport.use(new StravaStrategy(
   {
@@ -113,7 +105,7 @@ app.post('/rest/login', function (req, res, next) {
   delete req.session.user
 
   Promise.resolve(req.body)
-    .then(doKmKisaLogin)
+    .then(kmapi.doKmKisaLogin)
     .then(saveCredentials(req.body.username, req.body.password))
     .then(function (username) {
       req.session.user = username
@@ -122,55 +114,8 @@ app.post('/rest/login', function (req, res, next) {
     .catch(function (e) {
       return next(e)
     })
-
-  function doKmKisaLogin(creds) {
-    if (!creds || !creds.hasOwnProperty('username')) throw new HttpError(400, "username missing")
-    if (!creds.hasOwnProperty('password')) throw new HttpError(400, "password missing")
-
-    var cookieJar = requestAsync.jar()
-    return requestAsync({uri: 'https://www.kilometrikisa.fi/accounts/login/', jar: cookieJar})
-      .spread(getCsrfTokenCookie)
-      .then(function (csrftoken) {
-        return postLogin(csrftoken, creds.username, creds.password, cookieJar)
-      })
-      .spread(getSessionIdCookie)
-      .then(function (sessionid) {
-        if (sessionid === undefined) {
-          throw new HttpError(401, "Tarkista käyttäjätunnus ja/tai salasana")
-        }
-        return creds.username
-      })
-
-    function postLogin(csrftoken, username, password, cookieJar) {
-      return requestAsync({ method: 'POST',
-                            headers: { 'Referer': 'https://www.kilometrikisa.fi/accounts/login/' },
-                            jar: cookieJar,
-                            uri: 'https://www.kilometrikisa.fi/accounts/login/',
-                            form: { csrfmiddlewaretoken: csrftoken,
-                                    username: username,
-                                    password: password }
-                          })
-    }
-
-    function getCsrfTokenCookie(res, body) {
-      return getCookieFromRes(res, 'csrftoken')
-    }
-
-    function getSessionIdCookie(res, body) {
-      return getCookieFromRes(res, 'sessionid')
-    }
-
-    function getCookieFromRes(res, cookiename) {
-      if (res.headers['set-cookie'] instanceof Array)
-        cookies = res.headers['set-cookie'].map(function (c) { return (Cookie.parse(c)) })
-      else
-        cookies = [Cookie.parse(res.headers['set-cookie'])]
-
-      cookie = _.find(cookies, { 'key': cookiename})
-      return cookie ? cookie.value : undefined
-    }
-  }
 })
+
 
 app.use(function (err, req, res, next) {
   util.log('error handling request: ' + err.stack)

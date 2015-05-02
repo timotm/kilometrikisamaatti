@@ -3,7 +3,6 @@ define(function (require) {
   var BJQ = require('bacon.jquery')
   var Handlebars = require('handlebars')
 
-  console.log(Handlebars)
   var userinfoE = getJsonE('/rest/userinfo')
   userinfoE.onValue(userinfoReceived)
 

@@ -21,6 +21,7 @@
     "express": "^4.12.3",
     "express-session": "^1.10.4",
     "lodash": "^3.6.0",
+    "moment": "^2.10.2",
     "morgan": "^1.5.2",
     "passport": "^0.2.1",
     "passport-moves": "0.0.1",
