@@ -8,6 +8,10 @@ var moment = require('moment')
 var requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}))
 var kmapi = require('./kmapi')
 
+var daysAgo = process.argv[2] || 1
+
+console.log('Using date', yesterMoment().start.format('YYYY-MM-DD'))
+
 database.getAllTokensAsync().then(function (logins) {
   return Promise.join(
     Promise.all(_(logins).filter(hasStravaToken).map(saveStravaMileageForLogin).value()),
@@ -28,7 +32,7 @@ function hasMovesToken(login) {
 
 function yesterMoment() {
   var d = new Date()
-  d.setDate(d.getDate() - 1)
+  d.setDate(d.getDate() - daysAgo)
   d.setHours(0)
   d.setMinutes(0)
   d.setSeconds(0)
