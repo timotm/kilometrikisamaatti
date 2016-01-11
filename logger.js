@@ -86,4 +86,7 @@ function saveMovesMileageForLogin(login) {
         console.log('Moves:', login.kk_login, 'did not cycle')
       }
     })
+    .catch(function (e) {
+      console.log('MOVES ERROR', login.kk_login, e)
+    })
 }
