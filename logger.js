@@ -13,6 +13,9 @@ database.getAllTokensAsync().then(function (logins) {
     Promise.all(_(logins).filter(hasStravaToken).map(saveStravaMileageForLogin).value()),
     Promise.all(_(logins).filter(hasMovesToken).map(saveMovesMileageForLogin).value())
   )
+    .then(function () {
+      process.exit(0)
+    })
 })
 
 function hasStravaToken(login) {
