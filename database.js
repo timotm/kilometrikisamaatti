@@ -10,6 +10,10 @@ function getAllTokens(pgrm) {
   return pgrm.queryAsync('select moves_accesstoken, strava_accesstoken, kk_login, kk_passwd from login')
 }
 
+function getTokensForLogin(pgrm, login) {
+  return pgrm.queryAsync('select moves_accesstoken, strava_accesstoken, kk_login, kk_passwd from login where kk_login = $1', [login])
+}
+
 function saveCredentialsAsync(pgrm, username, password) {
   var insert = {
     text: 'insert into login (kk_login, kk_passwd) select $1, $2',
@@ -46,5 +50,6 @@ module.exports = function (dbUrl) {
     saveMovesAccessTokenAsync: function saveMovesAccessTokenAsyncWithPgrm(username, token) { return saveMovesAccessTokenAsync(pgrm, username, token) },
     saveStravaAccessTokenAsync: function saveStravaAccessTokenAsyncWithPgrm(username, token) { return saveStravaAccessTokenAsync(pgrm, username, token) },
     getAllTokensAsync: function getAllTokensAsyncWithPgrm() { return getAllTokens(pgrm) },
+    getTokensForLoginAsync: function getTokensForLoginAsyncWithPgrm(kk_login) { return getTokensForLogin(pgrm, kk_login) },
   }
 }

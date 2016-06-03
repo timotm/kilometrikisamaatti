@@ -9,10 +9,18 @@ var requestAsync = Promise.promisify(require('request').defaults({strictSSL: fal
 var kmapi = require('./kmapi')
 
 var daysAgo = process.argv[2] || 1
+var login = process.argv[3] || undefined
 
 console.log('Using date', yesterMoment().start.format('YYYY-MM-DD'))
 
-database.getAllTokensAsync().then(function (logins) {
+if (login) {
+  database.getTokensForLoginAsync(login).then(saveMileageForLogins)
+}
+else {
+  database.getAllTokensAsync().then(saveMileageForLogins)
+}
+
+function saveMileageForLogins(logins) {
   return Promise.join(
     Promise.all(_(logins).filter(hasStravaToken).map(saveStravaMileageForLogin).value()),
     Promise.all(_(logins).filter(hasMovesToken).map(saveMovesMileageForLogin).value())
@@ -20,7 +28,7 @@ database.getAllTokensAsync().then(function (logins) {
     .then(function () {
       process.exit(0)
     })
-})
+}
 
 function hasStravaToken(login) {
   return login.strava_accesstoken != null
