@@ -1,9 +1,7 @@
 
 function getAccessTokensAsync(pgrm, kk_login) {
   return pgrm.queryAsync('select moves_accesstoken is not null as moves, strava_accesstoken is not null as strava from login where kk_login = $1', [kk_login])
-    .then(function (data) {
-      return data[0]
-    })
+    .then(data => data[0])
 }
 
 function getAllTokens(pgrm) {
@@ -28,9 +26,7 @@ function saveCredentialsAsync(pgrm, username, password) {
   var q = pgrm.createUpsertCTE('login', 'kk_login', {insert: insert, update: update})
 
   return pgrm.queryAsync(q.text, q.values)
-    .then(function (data) {
-      return data[0].kk_login
-    })
+    .then(data => data[0].kk_login)
 }
 
 function saveMovesAccessTokenAsync(pgrm, username, accessToken) {
@@ -50,6 +46,6 @@ module.exports = function (dbUrl) {
     saveMovesAccessTokenAsync: function saveMovesAccessTokenAsyncWithPgrm(username, token) { return saveMovesAccessTokenAsync(pgrm, username, token) },
     saveStravaAccessTokenAsync: function saveStravaAccessTokenAsyncWithPgrm(username, token) { return saveStravaAccessTokenAsync(pgrm, username, token) },
     getAllTokensAsync: function getAllTokensAsyncWithPgrm() { return getAllTokens(pgrm) },
-    getTokensForLoginAsync: function getTokensForLoginAsyncWithPgrm(kk_login) { return getTokensForLogin(pgrm, kk_login) },
+    getTokensForLoginAsync: function getTokensForLoginAsyncWithPgrm(kk_login) { return getTokensForLogin(pgrm, kk_login) }
   }
 }

@@ -1,22 +1,21 @@
 #!/usr/bin/env node
 
-var dbString = process.env.DATABASE_URL || "postgres://localhost/kilometrikisamaatti"
-var database = require('./database')(dbString)
-var Promise = require('bluebird')
-var _ = require('lodash')
-var moment = require('moment')
-var requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}))
-var kmapi = require('./kmapi')
+const dbString = process.env.DATABASE_URL || "postgres://localhost/kilometrikisamaatti"
+const database = require('./database')(dbString)
+const Promise = require('bluebird')
+const _ = require('lodash')
+const moment = require('moment')
+const requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}))
+const kmapi = require('./kmapi')
 
-var daysAgo = process.argv[2] || 1
-var login = process.argv[3] || undefined
+const daysAgo = process.argv[2] || 1
+const login = process.argv[3] || undefined
 
 console.log('Using date', yesterMoment().start.format('YYYY-MM-DD'))
 
 if (login) {
   database.getTokensForLoginAsync(login).then(saveMileageForLogins)
-}
-else {
+} else {
   database.getAllTokensAsync().then(saveMileageForLogins)
 }
 
@@ -25,34 +24,32 @@ function saveMileageForLogins(logins) {
     Promise.all(_(logins).filter(hasStravaToken).map(saveStravaMileageForLogin).value()),
     Promise.all(_(logins).filter(hasMovesToken).map(saveMovesMileageForLogin).value())
   )
-    .then(function () {
-      process.exit(0)
-    })
+    .then(() => process.exit(0))
 }
 
 function hasStravaToken(login) {
-  return login.strava_accesstoken != null
+  return login.strava_accesstoken !== null
 }
 
 function hasMovesToken(login) {
-  return login.moves_accesstoken != null
+  return login.moves_accesstoken !== null
 }
 
 function yesterMoment() {
-  var d = new Date()
+  const d = new Date()
   d.setDate(d.getDate() - daysAgo)
   d.setHours(0)
   d.setMinutes(0)
   d.setSeconds(0)
 
-  var yesterdayStart = moment(d).utcOffset(3 * 60)
-  var yesterdayEnd = yesterdayStart.clone().add(1, 'days')
+  const yesterdayStart = moment(d).utcOffset(3 * 60)
+  const yesterdayEnd = yesterdayStart.clone().add(1, 'days')
 
   return { start: yesterdayStart, end: yesterdayEnd }
 }
 
 function saveStravaMileageForLogin(login) {
-  var yesterday = yesterMoment()
+  const yesterday = yesterMoment()
 
   return requestAsync({uri: 'https://www.strava.com/api/v3/athlete/activities?after='+ yesterday.start.format('X'),
                        headers: {
@@ -76,13 +73,13 @@ function saveStravaMileageForLogin(login) {
     })
 
   function activityIsRideFromYesterday(activity) {
-    var start = moment(activity.start_date)
+    const start = moment(activity.start_date)
     return activity.type === 'Ride' && start.isBefore(yesterday.end)
   }
 }
 
 function saveMovesMileageForLogin(login) {
-  var yesterday = yesterMoment()
+  const yesterday = yesterMoment()
 
   return requestAsync({uri: 'https://api.moves-app.com/api/1.1/user/summary/daily/'+ yesterday.start.format('YYYY-MM-DD') + '?timeZone=Europe/Helsinki',
                        headers: {
@@ -101,7 +98,7 @@ function saveMovesMileageForLogin(login) {
         console.log('Moves:', login.kk_login, 'did not cycle')
       }
     })
-    .catch(function (e) {
+    .catch(e => {
       console.log('MOVES ERROR', login.kk_login, e)
     })
 }

@@ -1,10 +1,10 @@
-var Promise = require('bluebird')
-var requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}))
-var Cookie = require('tough-cookie').Cookie
-var _ = require('lodash')
+const Promise = require('bluebird')
+const requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}))
+const Cookie = require('tough-cookie').Cookie
+const _ = require('lodash')
 
 function HttpError(status, msg) {
-  var ret = new Error(msg)
+  const ret = new Error(msg)
   ret.status = status
   return ret
 }
@@ -13,21 +13,19 @@ function doKmKisaLogin(creds) {
   if (!creds || !creds.hasOwnProperty('username')) throw new HttpError(400, "username missing")
   if (!creds.hasOwnProperty('password')) throw new HttpError(400, "password missing")
 
-  var cookieJar = requestAsync.jar()
+  const cookieJar = requestAsync.jar()
   return requestAsync({uri: 'https://www.kilometrikisa.fi/accounts/login/', jar: cookieJar})
     .spread(getCsrfTokenCookie)
-    .then(function (csrftoken) {
-      return postLogin(csrftoken, creds.username, creds.password, cookieJar)
-    })
+    .then(csrftoken => postLogin(csrftoken, creds.username, creds.password))
     .spread(getSessionIdCookie)
-    .then(function (sessionid) {
+    .then(sessionid => {
       if (sessionid === undefined) {
         throw new HttpError(401, "Tarkista käyttäjätunnus ja/tai salasana")
       }
       return cookieJar
     })
 
-  function postLogin(csrftoken, username, password, cookieJar) {
+  function postLogin(csrftoken, username, password) {
     return requestAsync({ method: 'POST',
                           headers: { 'Referer': 'https://www.kilometrikisa.fi/accounts/login/' },
                           jar: cookieJar,
@@ -39,29 +37,31 @@ function doKmKisaLogin(creds) {
   }
 }
 
-function getCsrfTokenCookie(res, body) {
+function getCsrfTokenCookie(res) {
   return getCookieFromRes(res, 'csrftoken')
 }
 
-function getSessionIdCookie(res, body) {
+function getSessionIdCookie(res) {
   return getCookieFromRes(res, 'sessionid')
 }
 
 function getCookieFromRes(res, cookiename) {
-  if (res.headers['set-cookie'] instanceof Array)
-    cookies = res.headers['set-cookie'].map(function (c) { return (Cookie.parse(c)) })
-  else
+  var cookies
+  if (res.headers['set-cookie'] instanceof Array) {
+    cookies = res.headers['set-cookie'].map(c => Cookie.parse(c))
+  } else {
     cookies = [Cookie.parse(res.headers['set-cookie'])]
+  }
 
-  cookie = _.find(cookies, { 'key': cookiename})
+  const cookie = _.find(cookies, { 'key': cookiename})
   return cookie ? cookie.value : undefined
 }
 
-function doKmKisaPostKmForDate(kk_login, kk_password, datestr, kms) {
+function doKmKisaPostKmAndMinutesForDate(kk_login, kk_password, datestr, kms, minutes) {
   return doKmKisaLogin({username: kk_login, password: kk_password})
-    .then(function (cookieJar) {
-      var cookies = cookieJar.getCookies('https://www.kilometrikisa.fi/')
-      csrftoken = _(cookies).find(function (c) { return c.key === 'csrftoken' }).value
+    .then(cookieJar => {
+      const cookies = cookieJar.getCookies('https://www.kilometrikisa.fi/')
+      const csrftoken = _(cookies).find(c => c.key === 'csrftoken').value
       return requestAsync({ method: 'POST',
                             headers: { 'Referer': 'https://www.kilometrikisa.fi/contest/log/' },
                             jar: cookieJar,
@@ -69,7 +69,7 @@ function doKmKisaPostKmForDate(kk_login, kk_password, datestr, kms) {
                             form: { csrfmiddlewaretoken: csrftoken,
                                     km_amount: kms.toString().replace('.', ','),
                                     contest_id: "22",
-                                    km_date: datestr },
+                                    km_date: datestr }
                           })
     })
 }
