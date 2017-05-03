@@ -56,18 +56,19 @@ function saveStravaMileageForLogin(login) {
                          'Authorization': 'Bearer ' + login.strava_accesstoken
                        }
                       })
-    .spread(function (res, body) {
-      return _(JSON.parse(body)).filter(activityIsRideFromYesterday).reduce(function (acc, ride) {
-        return acc + ride.distance / 1000
-      }, 0)
-    })
-    .then(function (total) {
-      total = total.toFixed(2)
-      if (total > 0) {
-        console.log('Strava:', login.kk_login, 'cycled', total, 'kms')
-        return kmapi.doKmKisaPostKmForDate(login.kk_login, login.kk_passwd, yesterday.start.format('YYYY-MM-DD'), total)
-      }
-      else {
+    .spread((res, body) => _(JSON.parse(body))
+            .filter(activityIsRideFromYesterday)
+            .reduce((acc, ride) => ({distance: acc.distance + ride.distance / 1000,
+                                     duration: acc.duration + ride.moving_time}),
+                    {distance: 0, duration: 0})
+           )
+    .then(total => {
+      const totalDistance = total.distance.toFixed(2)
+      const totalMinutes = Math.round(total.duration / 60)
+      if (totalDistance > 0) {
+        console.log(`Strava: ${login.kk_login} cycled ${totalDistance} kms / ${totalMinutes} minutes`)
+        return kmapi.doKmKisaPostKmAndMinutesForDate(login.kk_login, login.kk_passwd, yesterday.start.format('YYYY-MM-DD'), totalDistance, totalMinutes)
+      } else {
         console.log('Strava:', login.kk_login, 'did not cycle')
       }
     })
@@ -86,13 +87,13 @@ function saveMovesMileageForLogin(login) {
                          'Authorization': 'Bearer ' + login.moves_accesstoken
                        }
                       })
-    .spread(function (res, body) {
-      var summary = _(JSON.parse(body)).first().summary
-      var distance = _(summary).where({ 'activity': 'cycling' }).pluck('distance')
-      distance = (distance / 1000).toFixed(2)
+    .spread((res, body) => {
+      const summary = _(JSON.parse(body)).first().summary
+      const distance = (_(summary).where({ 'activity': 'cycling' }).pluck('distance') / 1000).toFixed(2)
+      const duration = Math.round(_(summary).where({ 'activity': 'cycling' }).pluck('duration') / 60)
       if (distance > 0) {
-        console.log('Moves:', login.kk_login, 'cycled', distance, 'kms')
-        return kmapi.doKmKisaPostKmForDate(login.kk_login, login.kk_passwd, yesterday.start.format('YYYY-MM-DD'), distance)
+        console.log(`Moves: ${login.kk_login} cycled ${distance} kms / ${duration} minutes`)
+        return kmapi.doKmKisaPostKmAndMinutesForDate(login.kk_login, login.kk_passwd, yesterday.start.format('YYYY-MM-DD'), distance, duration)
       }
       else {
         console.log('Moves:', login.kk_login, 'did not cycle')

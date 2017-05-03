@@ -60,21 +60,31 @@ function getCookieFromRes(res, cookiename) {
 function doKmKisaPostKmAndMinutesForDate(kk_login, kk_password, datestr, kms, minutes) {
   return doKmKisaLogin({username: kk_login, password: kk_password})
     .then(cookieJar => {
-      const cookies = cookieJar.getCookies('https://www.kilometrikisa.fi/')
-      const csrftoken = _(cookies).find(c => c.key === 'csrftoken').value
+      const csrftoken = jar => _(jar.getCookies('https://www.kilometrikisa.fi/')).find(c => c.key === 'csrftoken').value
+
       return requestAsync({ method: 'POST',
                             headers: { 'Referer': 'https://www.kilometrikisa.fi/contest/log/' },
                             jar: cookieJar,
                             uri: 'https://www.kilometrikisa.fi/contest/log-save/',
-                            form: { csrfmiddlewaretoken: csrftoken,
+                            form: { csrfmiddlewaretoken: csrftoken(cookieJar),
                                     km_amount: kms.toString().replace('.', ','),
                                     contest_id: "22",
                                     km_date: datestr }
                           })
+        .then(() => requestAsync({ method: 'POST',
+                                   headers: { 'Referer': 'https://www.kilometrikisa.fi/contest/log/' },
+                                   jar: cookieJar,
+                                   uri: 'https://www.kilometrikisa.fi/contest/minute-log-save/',
+                                   form: { csrfmiddlewaretoken: csrftoken(cookieJar),
+                                           hours: Math.floor(minutes/60).toString(),
+                                           minutes: (minutes%60).toString(),
+                                           contest_id: "22",
+                                           date: datestr }
+                                 }))
     })
 }
 
 module.exports = {
   doKmKisaLogin: doKmKisaLogin,
-  doKmKisaPostKmForDate: doKmKisaPostKmForDate,
+  doKmKisaPostKmAndMinutesForDate: doKmKisaPostKmAndMinutesForDate
 }
