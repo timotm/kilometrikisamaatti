@@ -42,7 +42,7 @@ function yesterMoment() {
   d.setMinutes(0)
   d.setSeconds(0)
 
-  const yesterdayStart = moment(d).utcOffset(3 * 60)
+  const yesterdayStart = moment(d).utcOffset(moment().utcOffset())
   const yesterdayEnd = yesterdayStart.clone().add(1, 'days')
 
   return { start: yesterdayStart, end: yesterdayEnd }
