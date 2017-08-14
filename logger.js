@@ -74,7 +74,7 @@ function saveStravaMileageForLogin(login) {
     })
 
   function activityIsRideFromYesterday(activity) {
-    const start = moment(activity.start_date)
+    const start = moment(activity.start_date_local)
     return activity.type === 'Ride' && start.isBefore(yesterday.end)
   }
 }
