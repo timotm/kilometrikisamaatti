@@ -68,7 +68,7 @@ function doKmKisaPostKmAndMinutesForDate(kk_login, kk_password, datestr, kms, mi
                             uri: 'https://www.kilometrikisa.fi/contest/log-save/',
                             form: { csrfmiddlewaretoken: csrftoken(cookieJar),
                                     km_amount: kms.toString().replace('.', ','),
-                                    contest_id: "30",
+                                    contest_id: "31",
                                     km_date: datestr }
                           })
         .then(() => requestAsync({ method: 'POST',
