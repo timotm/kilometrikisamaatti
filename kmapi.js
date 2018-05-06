@@ -61,6 +61,7 @@ function doKmKisaPostKmAndMinutesForDate(kk_login, kk_password, datestr, kms, mi
   return doKmKisaLogin({username: kk_login, password: kk_password})
     .then(cookieJar => {
       const csrftoken = jar => _(jar.getCookies('https://www.kilometrikisa.fi/')).find(c => c.key === 'csrftoken').value
+      const contest_id = "31"
 
       return requestAsync({ method: 'POST',
                             headers: { 'Referer': 'https://www.kilometrikisa.fi/contest/log/' },
@@ -68,7 +69,7 @@ function doKmKisaPostKmAndMinutesForDate(kk_login, kk_password, datestr, kms, mi
                             uri: 'https://www.kilometrikisa.fi/contest/log-save/',
                             form: { csrfmiddlewaretoken: csrftoken(cookieJar),
                                     km_amount: kms.toString().replace('.', ','),
-                                    contest_id: "31",
+                                    contest_id,
                                     km_date: datestr }
                           })
         .then(() => requestAsync({ method: 'POST',
@@ -78,7 +79,7 @@ function doKmKisaPostKmAndMinutesForDate(kk_login, kk_password, datestr, kms, mi
                                    form: { csrfmiddlewaretoken: csrftoken(cookieJar),
                                            hours: Math.floor(minutes/60).toString(),
                                            minutes: (minutes%60).toString(),
-                                           contest_id: "30",
+                                           contest_id,
                                            date: datestr }
                                  }))
     })
