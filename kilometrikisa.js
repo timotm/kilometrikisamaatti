@@ -5,7 +5,6 @@ var Promise = require('bluebird')
 var util = require('util')
 var passport = require('passport')
 var StravaStrategy = require('passport-strava').Strategy
-var MovesStrategy = require('passport-moves').Strategy
 var pg = require('pg')
 var session = require('express-session')
 var pgSession = require('connect-pg-simple')(session)
@@ -25,22 +24,6 @@ passport.use(new StravaStrategy(
   function (req, accessToken, refreshToken, profile, done) {
     req.session.stravaAccessToken = accessToken
     return database.saveStravaAccessTokenAsync(req.session.user, accessToken)
-      .then(function () {
-        done(null, profile)
-      })
-  }
-))
-
-passport.use(new MovesStrategy(
-  {
-    clientID: 'L7RMtCDn2DiS1EEJiE75WjwLdKdlJu_U',
-    clientSecret: process.env.MOVES_KLIENT_SEKRET,
-    callbackURL: process.env.NODE_ENV === 'production' ? 'https://kilometrikisamaatti.herokuapp.com/auth/moves/callback' : 'http://localhost:9876/auth/moves/callback',
-    passReqToCallback: true
-  },
-  function (req, accessToken, refreshToken, profile, done) {
-    req.session.movesAccessToken = accessToken
-    return database.saveMovesAccessTokenAsync(req.session.user, accessToken)
       .then(function () {
         done(null, profile)
       })
@@ -82,12 +65,9 @@ app.use(session({
 
 var redirections = { successRedirect: '/', failureRedirect: '/' }
 var stravaOpts = _.assign({scope: 'view_private'}, redirections)
-var movesOpts = _.assign({scope: ['activity']}, redirections)
 
 app.get('/auth/strava', passport.authenticate('strava', stravaOpts))
 app.get('/auth/strava/callback', passport.authenticate('strava', stravaOpts))
-app.get('/auth/moves', passport.authenticate('moves', movesOpts))
-app.get('/auth/moves/callback', passport.authenticate('moves', movesOpts))
 
 app.get('/rest/userinfo', function (req, res) {
   util.log("/rest/userinfo " + (req.session.hasOwnProperty('user') ? req.session.user : '[nil]'))

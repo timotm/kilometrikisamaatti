@@ -21,18 +21,12 @@ if (login) {
 
 function saveMileageForLogins(logins) {
   return Promise.join(
-    Promise.all(_(logins).filter(hasStravaToken).map(saveStravaMileageForLogin).value()),
-    Promise.all(_(logins).filter(hasMovesToken).map(saveMovesMileageForLogin).value())
-  )
+    Promise.all(_(logins).filter(hasStravaToken).map(saveStravaMileageForLogin).value()))
     .then(() => process.exit(0))
 }
 
 function hasStravaToken(login) {
   return login.strava_accesstoken !== null
-}
-
-function hasMovesToken(login) {
-  return login.moves_accesstoken !== null
 }
 
 function yesterMoment() {
@@ -79,27 +73,3 @@ function saveStravaMileageForLogin(login) {
   }
 }
 
-function saveMovesMileageForLogin(login) {
-  const yesterday = yesterMoment()
-
-  return requestAsync({uri: 'https://api.moves-app.com/api/1.1/user/summary/daily/'+ yesterday.start.format('YYYY-MM-DD') + '?timeZone=Europe/Helsinki',
-                       headers: {
-                         'Authorization': 'Bearer ' + login.moves_accesstoken
-                       }
-                      })
-    .spread((res, body) => {
-      const summary = _(JSON.parse(body)).first().summary
-      const distance = (_(summary).where({ 'activity': 'cycling' }).pluck('distance') / 1000).toFixed(2)
-      const duration = Math.round(_(summary).where({ 'activity': 'cycling' }).pluck('duration') / 60)
-      if (distance > 0) {
-        console.log(`Moves: ${login.kk_login} cycled ${distance} kms / ${duration} minutes`)
-        return kmapi.doKmKisaPostKmAndMinutesForDate(login.kk_login, login.kk_passwd, yesterday.start.format('YYYY-MM-DD'), distance, duration)
-      }
-      else {
-        console.log('Moves:', login.kk_login, 'did not cycle')
-      }
-    })
-    .catch(e => {
-      console.log('MOVES ERROR', login.kk_login, e)
-    })
-}

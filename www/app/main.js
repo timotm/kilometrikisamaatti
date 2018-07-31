@@ -13,7 +13,7 @@ define(function (require) {
       $('#username').val(userinfo.user)
       $('#step1').addClass('disabled')
 
-      if (!userinfo.moves && !userinfo.strava) {
+      if (!userinfo.strava) {
         $('#step2').removeClass('disabled')
       }
       else {
