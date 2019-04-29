@@ -64,7 +64,7 @@ app.use(session({
 }))
 
 var redirections = { successRedirect: '/', failureRedirect: '/' }
-var stravaOpts = _.assign({scope: 'view_private'}, redirections)
+var stravaOpts = _.assign({scope: 'activity:read_all'}, redirections)
 
 app.get('/auth/strava', passport.authenticate('strava', stravaOpts))
 app.get('/auth/strava/callback', passport.authenticate('strava', stravaOpts))
