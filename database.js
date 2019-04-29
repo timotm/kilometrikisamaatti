@@ -33,8 +33,8 @@ function saveMovesAccessTokenAsync(pgrm, username, accessToken) {
   return pgrm.queryAsync('update login set moves_accesstoken = $2 where kk_login = $1', [username, accessToken])
 }
 
-function saveStravaAccessTokenAsync(pgrm, username, accessToken) {
-  return pgrm.queryAsync('update login set strava_accesstoken = $2 where kk_login = $1', [username, accessToken])
+function saveStravaTokensAsync(pgrm, username, accessToken, refreshToken) {
+  return pgrm.queryAsync('update login set strava_accesstoken = $2, strava_refreshtoken = $3 where kk_login = $1', [username, accessToken, refreshToken])
 }
 
 module.exports = function (dbUrl) {
@@ -44,7 +44,7 @@ module.exports = function (dbUrl) {
     getAccessTokensAsync: function getAccessTokensAsyncWithPgrm(kk_login) { return getAccessTokensAsync(pgrm, kk_login) },
     saveCredentialsAsync: function saveCredentialsAsyncWithPgrm(username, password) { return saveCredentialsAsync(pgrm, username, password) },
     saveMovesAccessTokenAsync: function saveMovesAccessTokenAsyncWithPgrm(username, token) { return saveMovesAccessTokenAsync(pgrm, username, token) },
-    saveStravaAccessTokenAsync: function saveStravaAccessTokenAsyncWithPgrm(username, token) { return saveStravaAccessTokenAsync(pgrm, username, token) },
+    saveStravaTokensAsync: function saveStravaTokensAsyncWithPgRm(username, access, refresh) { return saveStravaTokensAsync(pgrm, username, access, refresh) },
     getAllTokensAsync: function getAllTokensAsyncWithPgrm() { return getAllTokens(pgrm) },
     getTokensForLoginAsync: function getTokensForLoginAsyncWithPgrm(kk_login) { return getTokensForLogin(pgrm, kk_login) }
   }

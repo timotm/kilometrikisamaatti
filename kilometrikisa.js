@@ -23,7 +23,8 @@ passport.use(new StravaStrategy(
   },
   function (req, accessToken, refreshToken, profile, done) {
     req.session.stravaAccessToken = accessToken
-    return database.saveStravaAccessTokenAsync(req.session.user, accessToken)
+    req.session.stravaRefreshToken = refreshToken
+    return database.saveStravaTokensAsync(req.session.user, accessToken, refreshToken)
       .then(function () {
         done(null, profile)
       })
