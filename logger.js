@@ -5,7 +5,7 @@ const database = require('./database')(dbString)
 const Promise = require('bluebird')
 const _ = require('lodash')
 const moment = require('moment')
-const requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}))
+const requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}), {multiArgs: true})
 const kmapi = require('./kmapi')
 
 const daysAgo = process.argv[2] || 1

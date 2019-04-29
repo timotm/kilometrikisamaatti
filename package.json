@@ -11,24 +11,24 @@
   "author": "",
   "license": "MIT",
   "engines": {
-    "node": "6.11.1"
+    "node": "8.11.3"
   },
   "dependencies": {
-    "bluebird": "^2.9.24",
+    "bluebird": "^3.5.4",
     "body-parser": "^1.12.2",
     "bower": "^1.4.1",
-    "connect-pg-simple": "^3.0.0",
+    "connect-pg-simple": "^5.0.0",
     "express": "^4.12.3",
     "express-session": "^1.10.4",
-    "lodash": "^3.6.0",
+    "lodash": "^4.17.11",
     "moment": "^2.10.2",
     "morgan": "^1.5.2",
-    "passport": "^0.2.1",
+    "passport": "^0.4.0",
     "passport-moves": "0.0.1",
-    "passport-strava": "^0.1.0",
-    "pg": "^4.3.0",
-    "pg-using-bluebird": "^1.0.1",
+    "passport-strava": "^0.2.0",
+    "pg": "^7.10.0",
+    "pg-using-bluebird": "^3.2.0",
     "request": "^2.55.0",
-    "tough-cookie": "^0.12.1"
+    "tough-cookie": "^3.0.1"
   }
 }

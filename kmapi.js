@@ -1,5 +1,5 @@
 const Promise = require('bluebird')
-const requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}))
+const requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}), {multiArgs: true})
 const Cookie = require('tough-cookie').Cookie
 const _ = require('lodash')
 
