@@ -1,5 +1,5 @@
 const Promise = require('bluebird')
-const requestAsync = Promise.promisify(require('request').defaults({strictSSL: false}), {multiArgs: true})
+const requestAsync = Promise.promisify(require('request').defaults({ strictSSL: false }), { multiArgs: true })
 const Cookie = require('tough-cookie').Cookie
 const _ = require('lodash')
 
@@ -10,30 +10,29 @@ function HttpError(status, msg) {
 }
 
 function doKmKisaLogin(creds) {
-  if (!creds || !creds.hasOwnProperty('username')) throw new HttpError(400, "username missing")
-  if (!creds.hasOwnProperty('password')) throw new HttpError(400, "password missing")
+  if (!creds || !creds.hasOwnProperty('username')) throw new HttpError(400, 'username missing')
+  if (!creds.hasOwnProperty('password')) throw new HttpError(400, 'password missing')
 
   const cookieJar = requestAsync.jar()
-  return requestAsync({uri: 'https://www.kilometrikisa.fi/accounts/login/', jar: cookieJar})
+  return requestAsync({ uri: 'https://www.kilometrikisa.fi/accounts/login/', jar: cookieJar })
     .spread(getCsrfTokenCookie)
     .then(csrftoken => postLogin(csrftoken, creds.username, creds.password))
     .spread(getSessionIdCookie)
     .then(sessionid => {
       if (sessionid === undefined) {
-        throw new HttpError(401, "Tarkista käyttäjätunnus ja/tai salasana")
+        throw new HttpError(401, 'Tarkista käyttäjätunnus ja/tai salasana')
       }
       return cookieJar
     })
 
   function postLogin(csrftoken, username, password) {
-    return requestAsync({ method: 'POST',
-                          headers: { 'Referer': 'https://www.kilometrikisa.fi/accounts/login/' },
-                          jar: cookieJar,
-                          uri: 'https://www.kilometrikisa.fi/accounts/login/',
-                          form: { csrfmiddlewaretoken: csrftoken,
-                                  username: username,
-                                  password: password }
-                        })
+    return requestAsync({
+      method: 'POST',
+      headers: { Referer: 'https://www.kilometrikisa.fi/accounts/login/' },
+      jar: cookieJar,
+      uri: 'https://www.kilometrikisa.fi/accounts/login/',
+      form: { csrfmiddlewaretoken: csrftoken, username: username, password: password }
+    })
   }
 }
 
@@ -53,36 +52,42 @@ function getCookieFromRes(res, cookiename) {
     cookies = [Cookie.parse(res.headers['set-cookie'])]
   }
 
-  const cookie = _.find(cookies, { 'key': cookiename})
+  const cookie = _.find(cookies, { key: cookiename })
   return cookie ? cookie.value : undefined
 }
 
 function doKmKisaPostKmAndMinutesForDate(kk_login, kk_password, datestr, kms, minutes) {
-  return doKmKisaLogin({username: kk_login, password: kk_password})
-    .then(cookieJar => {
-      const csrftoken = jar => _(jar.getCookies('https://www.kilometrikisa.fi/')).find(c => c.key === 'csrftoken').value
-      const contest_id = "31"
+  return doKmKisaLogin({ username: kk_login, password: kk_password }).then(cookieJar => {
+    const csrftoken = jar => _(jar.getCookies('https://www.kilometrikisa.fi/')).find(c => c.key === 'csrftoken').value
+    const contest_id = '38'
 
-      return requestAsync({ method: 'POST',
-                            headers: { 'Referer': 'https://www.kilometrikisa.fi/contest/log/' },
-                            jar: cookieJar,
-                            uri: 'https://www.kilometrikisa.fi/contest/log-save/',
-                            form: { csrfmiddlewaretoken: csrftoken(cookieJar),
-                                    km_amount: kms.toString().replace('.', ','),
-                                    contest_id,
-                                    km_date: datestr }
-                          })
-        .then(() => requestAsync({ method: 'POST',
-                                   headers: { 'Referer': 'https://www.kilometrikisa.fi/contest/log/' },
-                                   jar: cookieJar,
-                                   uri: 'https://www.kilometrikisa.fi/contest/minute-log-save/',
-                                   form: { csrfmiddlewaretoken: csrftoken(cookieJar),
-                                           hours: Math.floor(minutes/60).toString(),
-                                           minutes: (minutes%60).toString(),
-                                           contest_id,
-                                           date: datestr }
-                                 }))
-    })
+    return requestAsync({
+      method: 'POST',
+      headers: { Referer: 'https://www.kilometrikisa.fi/contest/log/' },
+      jar: cookieJar,
+      uri: 'https://www.kilometrikisa.fi/contest/log-save/',
+      form: {
+        csrfmiddlewaretoken: csrftoken(cookieJar),
+        km_amount: kms.toString().replace('.', ','),
+        contest_id,
+        km_date: datestr
+      }
+    }).then(() =>
+      requestAsync({
+        method: 'POST',
+        headers: { Referer: 'https://www.kilometrikisa.fi/contest/log/' },
+        jar: cookieJar,
+        uri: 'https://www.kilometrikisa.fi/contest/minute-log-save/',
+        form: {
+          csrfmiddlewaretoken: csrftoken(cookieJar),
+          hours: Math.floor(minutes / 60).toString(),
+          minutes: (minutes % 60).toString(),
+          contest_id,
+          date: datestr
+        }
+      })
+    )
+  })
 }
 
 module.exports = {
