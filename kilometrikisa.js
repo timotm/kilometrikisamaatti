@@ -1,38 +1,20 @@
-var express = require('express')
-var logger = require('morgan')
-var bodyParser = require('body-parser')
-var Promise = require('bluebird')
-var util = require('util')
-var passport = require('passport')
-var StravaStrategy = require('passport-strava').Strategy
-var pg = require('pg')
-var session = require('express-session')
-var pgSession = require('connect-pg-simple')(session)
-var _ = require('lodash')
-var dbString = process.env.DATABASE_URL || 'postgres://localhost/kilometrikisamaatti'
-var database = require('./database')(dbString)
-var kmapi = require('./kmapi')
+const express = require('express')
+const logger = require('morgan')
+const bodyParser = require('body-parser')
+const Promise = require('bluebird')
+const util = require('util')
+const passport = require('passport')
+const pg = require('pg')
+const session = require('express-session')
+const pgSession = require('connect-pg-simple')(session)
+const _ = require('lodash')
+const database = require('./database')()
+const kmapi = require('./kmapi')
+const stravaStrategy = require('./strava')
+const refresh = require('passport-oauth2-refresh')
 
-passport.use(
-  new StravaStrategy(
-    {
-      clientID: '5465',
-      clientSecret: process.env.STRAVA_KLIENT_SEKRET,
-      callbackURL:
-        process.env.NODE_ENV === 'production'
-          ? 'https://kilometrikisamaatti.herokuapp.com/auth/strava/callback'
-          : 'http://localhost:9876/auth/strava/callback',
-      passReqToCallback: true
-    },
-    function(req, accessToken, refreshToken, profile, done) {
-      req.session.stravaAccessToken = accessToken
-      req.session.stravaRefreshToken = refreshToken
-      return database.saveStravaTokensAsync(req.session.user, accessToken, refreshToken).then(function() {
-        done(null, profile)
-      })
-    }
-  )
-)
+passport.use(stravaStrategy)
+refresh.use(stravaStrategy)
 
 passport.serializeUser(function(user, done) {
   done(null, user.id)
@@ -60,7 +42,7 @@ app.use(
   session({
     store: new pgSession({
       pg: pg,
-      conString: dbString
+      conString: database.dbString
     }),
     secret: process.env.SESSION_SEKRET,
     cookie: { maxAge: 30 * 24 * 60 * 60 * 1000 }, // 30 days
