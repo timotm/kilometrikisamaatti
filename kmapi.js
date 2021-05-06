@@ -59,7 +59,7 @@ function getCookieFromRes(res, cookiename) {
 function doKmKisaPostKmAndMinutesForDate(kk_login, kk_password, datestr, kms, minutes) {
   return doKmKisaLogin({ username: kk_login, password: kk_password }).then(cookieJar => {
     const csrftoken = jar => _(jar.getCookies('https://www.kilometrikisa.fi/')).find(c => c.key === 'csrftoken').value
-    const contest_id = '38'
+    const contest_id = '45'
 
     return requestAsync({
       method: 'POST',
