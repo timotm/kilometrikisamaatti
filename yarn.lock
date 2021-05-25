@@ -796,10 +796,15 @@ bl@^4.0.3, bl@^4.1.0:
     inherits "^2.0.4"
     readable-stream "^3.4.0"
 
-bluebird@^3.4.6, bluebird@^3.5.4:
+bluebird@^3.4.6:
   version "3.5.4"
   resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.5.4.tgz#d6cc661595de30d5b3af5fcedd3c0b3ef6ec5714"
   integrity sha512-FG+nFEZChJrbQ9tIccIfZJBz3J7mLrAhxakAbnrJWn8d7aKOC+LWifa0G+p4ZqKp4y13T7juYvdhq9NzKdsrjw==
+
+bluebird@^3.7.2:
+  version "3.7.2"
+  resolved "https://registry.yarnpkg.com/bluebird/-/bluebird-3.7.2.tgz#9f229c15be272454ffa973ace0dbee79a1b0c36f"
+  integrity sha512-XpNj6GDQzdfW+r2Wnn7xiSAd7TM3jzkxGXBGTtWKuSXv1xUV+azxAm8jdWZN06QTQk+2N2XB9jRDkvbmQmcRtg==
 
 body-parser@1.18.3:
   version "1.18.3"
@@ -3851,7 +3856,7 @@ snyk-try-require@^2.0.0:
     lodash.clonedeep "^4.3.0"
     lru-cache "^5.1.1"
 
-snyk@1.606.0, snyk@^1.606.0:
+snyk@^1.606.0:
   version "1.606.0"
   resolved "https://registry.yarnpkg.com/snyk/-/snyk-1.606.0.tgz#3115f491a2be772cb4273c26c0213cdc1be57f8b"
   integrity sha512-xvJCdL5tGPnc1U1E1C7FjIQ80ZGm8MWQXY9Vvox/J+a69CgSgmFEP2UVTZZ9ndr3jGBAgr0/IKw+O+s1Jn4aYA==
