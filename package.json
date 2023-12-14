@@ -33,7 +33,7 @@
     "pg-using-bluebird": "^3.2.0",
     "request": "^2.55.0",
     "tough-cookie": "^3.0.1",
-    "snyk": "^1.606.0"
+    "snyk": "^1.675.0"
   },
   "snyk": true
 }
