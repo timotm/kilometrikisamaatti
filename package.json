@@ -31,7 +31,7 @@
     "passport-strava": "^0.2.0",
     "pg": "^7.10.0",
     "pg-using-bluebird": "^3.2.0",
-    "request": "^2.55.0",
+    "request": "^2.88.2",
     "tough-cookie": "^3.0.1",
     "snyk": "^1.606.0"
   },
